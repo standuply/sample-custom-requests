@@ -1,0 +1,35 @@
+{
+  "name": "@standuply/sample-custom-requests",
+  "version": "1.0.0",
+  "description": "Set of samples for Standuply custom request feature.",
+  "engines": {
+    "node": ">=6.9.0"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_ENV=dev nodemon bin/www --port 8080"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/standuply/sample-custom-requests"
+  },
+  "keywords": [
+    "standuply",
+    "custom",
+    "request"
+  ],
+  "author": "standuply",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "debug": "~2.2.0",
+    "node-emoji": "^1.8.1",
+    "optimist": "^0.6.1",
+    "request": "^2.74.0",
+    "request-promise": "^4.1.1",
+    "restify": "^5.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}

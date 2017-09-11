@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+const optimist = require('optimist');
+
+const argv = optimist
+    .usage('Usage: $0 --host [string] --port [number]')
+    .options('h', {
+        alias: 'host',
+        describe: 'Host to bind to',
+        default: '0.0.0.0'
+    })
+    .options('p', {
+        alias: 'port',
+        describe: 'Port to listen',
+        default: 8080
+    })
+    .argv;
+
+if (argv.help) {
+    optimist.showHelp();
+    process.exit();
+}
+
+require('../app')(argv);
