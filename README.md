@@ -1,7 +1,7 @@
-Standuply custom request example
-================================
+Standuply custom request examples
+=================================
 
-Here is the set of samples for Standuply custom request feature.
+Here is the set of samples for [Standuply](https://standuply.com) custom request feature.
 
 Standuply expects response from your endpoint in the format of Slack attachment. It should be one attachment object in every response.
 
