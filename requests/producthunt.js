@@ -16,15 +16,15 @@ const parsePage = (data) => {
 
     primContent('li').each((i, elm) => {
         const itemContent = cheerio.load(primContent(elm).html(), {decodeEntities:false});
-        const href = itemContent('*[class^="link_"]').attr('href');
+        const href = itemContent('*[class*="link_"]').attr('href');
         if (!thumbUrl) {
-            const imgTag = cheerio.load(itemContent('*[class^="thumbnail_"]').find('noscript').html());
+            const imgTag = cheerio.load(itemContent('*[class*="thumbnail_"]').find('noscript').html());
             thumbUrl = imgTag('img').attr('src');
         }
 
-        const title = itemContent('*[class^="title_"]').html();
-        const tagline = emoji.unemojify( itemContent('*[class^="tagline_"]').html() );
-        const actions = itemContent('*[class^="actions_"]').text();
+        const title = itemContent('*[class*="title_"]').html();
+        const tagline = emoji.unemojify( itemContent('*[class*="tagline_"]').html() );
+        const actions = itemContent('*[class*="actions_"]').text();
         const actionsArray = actions.split(/(\s+)/);
 
         let upvotes = '';
