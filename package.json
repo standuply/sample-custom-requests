@@ -24,6 +24,7 @@
     "debug": "~2.2.0",
     "node-cache": "^4.1.1",
     "node-emoji": "^1.8.1",
+    "node-hn-api": "^1.0.4",
     "optimist": "^0.6.1",
     "producthunt": "^0.3.0",
     "request": "^2.74.0",
