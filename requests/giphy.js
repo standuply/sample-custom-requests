@@ -6,7 +6,7 @@ const giphy = require('giphy-api')();
 // Stub for error response
 const errorMessage = require('../response-stubs/error');
 
-// This function parses giphy.com using simple strings
+// This function processes giphy.com JSON response
 const processGiphy = (data) => {
     let gifURL;
     const num = Math.floor(Math.random() * data.data.length);
@@ -22,7 +22,7 @@ const processGiphy = (data) => {
     return {image: gifURL, thumbnail: stillURL};
 };
 
-// This function gets and parses giphy.com using simple strings
+// This function gets 10 trending images from giphy.com
 module.exports = (req, res, next) => {
     let value = myCache.get("giphy");
     if (value !== undefined) {

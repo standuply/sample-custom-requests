@@ -64,7 +64,7 @@ const parseReddit = (data) => {
     return null;
 };
 
-// This function gets and parses giphy.com using simple strings
+// This function gets json result from reddit
 module.exports = (req, res, next) => {
     let subreddit = req.params.subreddit ? req.params.subreddit : 'aww';
 

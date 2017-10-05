@@ -5,7 +5,7 @@ const hn = require('node-hn-api');
 // Stub for error response
 const errorMessage = require('../response-stubs/error');
 
-// This function parses news.ycombinator.com using simple strings
+// This function processes news.ycombinator.com JSON response
 const parseStories = (stories) => {
     const fields = [];
     const ycURL = 'https://news.ycombinator.com/item?id=';
