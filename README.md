@@ -19,7 +19,10 @@ Try it now
 ----------
 The Node JS environment has to be installed to run the samples.
 
-Clone this repo, then run
+Clone this repo. Copy file .env/env.tpl to .env/env and set your values.
+Please find Client ID and Secret for Product Hunt in the [app dashboard](https://www.producthunt.com/v1/oauth/applications)
+
+Then run
 ```npm i```
 and
 ```npm start```
