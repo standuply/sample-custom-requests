@@ -71,6 +71,7 @@ module.exports = (req, res, next) => {
     let value = myCache.get("reddit-" + subreddit);
     if (value !== undefined) {
         res.json(value);
+        return;
     }
 
     let uri = 'https://www.reddit.com/r/' + subreddit;
