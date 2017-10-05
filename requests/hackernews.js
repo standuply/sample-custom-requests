@@ -27,35 +27,36 @@ const parseStories = (stories) => {
 // This function gets 5 top stories from news.ycombinator.com and generates Slack attachment object
 module.exports = (req, res, next) => {
     let value = myCache.get("hackernews");
-    if (value === undefined) {
-        const thumbUrl = 'http://www.ycombinator.com/images/ycombinator-logo-fb889e2e.png';
-        hn.fetchTopStories(5).then((topStories) => {
-            const fields = parseStories(topStories);
-
-            // Make the Slack attachment - one object
-            const result = {
-                fallback: 'Hacker News daily digest.',
-                color: '#36a64f',
-                pretext: 'Top stories on Hacker News',
-                title: 'Hacker News',
-                title_link: 'https://news.ycombinator.com/',
-                fields: fields,
-                thumb_url: thumbUrl,
-                mrkdwn_in: ['text', 'fields'],
-                footer: 'Standuply',
-                footer_icon: 'https://app.standuply.com/img/16.png',
-                ts: Math.round(Date.now() / 1000)
-            };
-
-            myCache.set("hackernews", result);
-            res.json(result);
-        })
-            .catch(error => {
-                console.log('Hacker News error', error);
-                res.json(errorMessage(error.toString()));
-            });
-    } else {
+    if (value !== undefined) {
         res.json(value);
+        return;
     }
+
+    const thumbUrl = 'http://www.ycombinator.com/images/ycombinator-logo-fb889e2e.png';
+    hn.fetchTopStories(5).then((topStories) => {
+        const fields = parseStories(topStories);
+
+        // Make the Slack attachment - one object
+        const result = {
+            fallback: 'Hacker News daily digest.',
+            color: '#36a64f',
+            pretext: 'Top stories on Hacker News',
+            title: 'Hacker News',
+            title_link: 'https://news.ycombinator.com/',
+            fields: fields,
+            thumb_url: thumbUrl,
+            mrkdwn_in: ['text', 'fields'],
+            footer: 'Standuply',
+            footer_icon: 'https://app.standuply.com/img/16.png',
+            ts: Math.round(Date.now() / 1000)
+        };
+
+        myCache.set("hackernews", result);
+        res.json(result);
+    })
+        .catch(error => {
+            console.log('Hacker News error', error);
+            res.json(errorMessage(error.toString()));
+        });
 
 };

@@ -69,54 +69,54 @@ module.exports = (req, res, next) => {
     let subreddit = req.params.subreddit ? req.params.subreddit : 'aww';
 
     let value = myCache.get("reddit-" + subreddit);
-    if (value === undefined) {
-        let uri = 'https://www.reddit.com/r/' + subreddit;
-
-        const request = {
-            method: 'GET',
-            uri: uri + '/top.json?t=day&limit=10',
-            json: false,
-            simple: false
-        };
-
-        requestPromise(request)
-            .then(data => {
-                const parseResult = parseReddit(JSON.parse(data));
-                if (parseResult === null) {
-                    throw 'parsing JSON, subreddit - ' + subreddit;
-                }
-
-                // Make the Slack attachment - one object
-                const result = {
-                    fallback: 'Reddit daily image.',
-                    color: '#36a64f',
-                    pretext: 'A Reddit image',
-                    title: subreddit + ' - Reddit',
-                    title_link: uri,
-                    fields: [
-                        {
-                            title: parseResult.title,
-                            value: `<https://www.reddit.com${parseResult.permalink}|  :speech_balloon:    ${parseResult.comments} comments>`,
-                            short: false
-                        }
-                    ],
-                    mrkdwn_in: ['text', 'fields'],
-                    image_url: parseResult.image,
-                    thumb_url: parseResult.thumbnail,
-                    footer: 'Standuply',
-                    footer_icon: 'https://app.standuply.com/img/16.png',
-                    ts: Math.round(Date.now() / 1000)
-                };
-
-                myCache.set("reddit-" + subreddit, result);
-                res.json(result);
-            })
-            .catch(error => {
-                console.log('Reddit error', error);
-                res.json(errorMessage(error.toString()));
-            });
-    } else {
+    if (value !== undefined) {
         res.json(value);
     }
+
+    let uri = 'https://www.reddit.com/r/' + subreddit;
+
+    const request = {
+        method: 'GET',
+        uri: uri + '/top.json?t=day&limit=10',
+        json: false,
+        simple: false
+    };
+
+    requestPromise(request)
+        .then(data => {
+            const parseResult = parseReddit(JSON.parse(data));
+            if (parseResult === null) {
+                throw 'parsing JSON, subreddit - ' + subreddit;
+            }
+
+            // Make the Slack attachment - one object
+            const result = {
+                fallback: 'Reddit daily image.',
+                color: '#36a64f',
+                pretext: 'A Reddit image',
+                title: subreddit + ' - Reddit',
+                title_link: uri,
+                fields: [
+                    {
+                        title: parseResult.title,
+                        value: `<https://www.reddit.com${parseResult.permalink}|  :speech_balloon:    ${parseResult.comments} comments>`,
+                        short: false
+                    }
+                ],
+                mrkdwn_in: ['text', 'fields'],
+                image_url: parseResult.image,
+                thumb_url: parseResult.thumbnail,
+                footer: 'Standuply',
+                footer_icon: 'https://app.standuply.com/img/16.png',
+                ts: Math.round(Date.now() / 1000)
+            };
+
+            myCache.set("reddit-" + subreddit, result);
+            res.json(result);
+        })
+        .catch(error => {
+            console.log('Reddit error', error);
+            res.json(errorMessage(error.toString()));
+        });
 
 };

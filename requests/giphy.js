@@ -25,37 +25,38 @@ const processGiphy = (data) => {
 // This function gets and parses giphy.com using simple strings
 module.exports = (req, res, next) => {
     let value = myCache.get("giphy");
-    if (value === undefined) {
-        giphy.trending({
-            limit: 10,
-            fmt: 'json'
-        })
-            .then(data => {
-                const parseResult = processGiphy(data);
-
-                // Make the Slack attachment - one object
-                const result = {
-                    fallback: 'Giphy daily digest.',
-                    color: '#36a64f',
-                    pretext: 'A trending gif',
-                    title: 'Giphy',
-                    title_link: 'https://giphy.com/',
-                    image_url: parseResult.image,
-                    thumb_url: parseResult.thumbnail,
-                    footer: 'Standuply',
-                    footer_icon: 'https://app.standuply.com/img/16.png',
-                    ts: Math.round(Date.now() / 1000)
-                };
-
-                myCache.set("giphy", result);
-                res.json(result);
-            })
-            .catch(error => {
-                console.log('giphy error', error);
-                res.json(errorMessage(error.toString()));
-            });
-    } else {
+    if (value !== undefined) {
         res.json(value);
+        return;
     }
+
+    giphy.trending({
+        limit: 10,
+        fmt: 'json'
+    })
+        .then(data => {
+            const parseResult = processGiphy(data);
+
+            // Make the Slack attachment - one object
+            const result = {
+                fallback: 'Giphy daily digest.',
+                color: '#36a64f',
+                pretext: 'A trending gif',
+                title: 'Giphy',
+                title_link: 'https://giphy.com/',
+                image_url: parseResult.image,
+                thumb_url: parseResult.thumbnail,
+                footer: 'Standuply',
+                footer_icon: 'https://app.standuply.com/img/16.png',
+                ts: Math.round(Date.now() / 1000)
+            };
+
+            myCache.set("giphy", result);
+            res.json(result);
+        })
+        .catch(error => {
+            console.log('giphy error', error);
+            res.json(errorMessage(error.toString()));
+        });
 
 };

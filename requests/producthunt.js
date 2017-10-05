@@ -32,50 +32,50 @@ let responseWithError = function (error, res) {
 // This function gets last posts from producthunt.com and generates Slack attachment
 module.exports = (req, res, next) => {
     let value = myCache.get("producthunt");
-    if (value === undefined) {
-
-        const productHunt = new productHuntAPI({
-            client_id: process.env.PRODUCTHUNT_CLIENT_ID,
-            client_secret: process.env.PRODUCTHUNT_CLIENT_SECRET,
-            grant_type: 'client_credentials'
-        });
-
-        productHunt.posts.index({}, (error, postsResult) => {
-            if (error) {
-                responseWithError(error.toString(), res);
-                return;
-            }
-
-            const resultJSON = postsResult.toJSON();
-            if (resultJSON.statusCode < 300) {
-                const bodyJSON = JSON.parse(resultJSON.body);
-
-                const parseResult = processResponse(bodyJSON);
-
-                // Make the Slack attachment - one object
-                const result = {
-                    fallback: 'Product Hunt daily digest.',
-                    color: '#36a64f',
-                    pretext: 'Top products on Product Hunt',
-                    title: 'Product Hunt popular',
-                    title_link: 'https://www.producthunt.com/',
-                    fields: parseResult.fields,
-                    thumb_url: parseResult.thumbUrl,
-                    mrkdwn_in: ['text', 'fields'],
-                    footer: 'Standuply',
-                    footer_icon: 'https://app.standuply.com/img/16.png',
-                    ts: Math.round(Date.now() / 1000)
-                };
-
-                myCache.set("producthunt", result);
-                res.json(result);
-            } else {
-                responseWithError('Bad status code received - ' + resultJSON.statusCode, res);
-            }
-
-        });
-    } else {
+    if (value !== undefined) {
         res.json(value);
+        return;
     }
+
+    const productHunt = new productHuntAPI({
+        client_id: process.env.PRODUCTHUNT_CLIENT_ID,
+        client_secret: process.env.PRODUCTHUNT_CLIENT_SECRET,
+        grant_type: 'client_credentials'
+    });
+
+    productHunt.posts.index({}, (error, postsResult) => {
+        if (error) {
+            responseWithError(error.toString(), res);
+            return;
+        }
+
+        const resultJSON = postsResult.toJSON();
+        if (resultJSON.statusCode < 300) {
+            const bodyJSON = JSON.parse(resultJSON.body);
+
+            const parseResult = processResponse(bodyJSON);
+
+            // Make the Slack attachment - one object
+            const result = {
+                fallback: 'Product Hunt daily digest.',
+                color: '#36a64f',
+                pretext: 'Top products on Product Hunt',
+                title: 'Product Hunt popular',
+                title_link: 'https://www.producthunt.com/',
+                fields: parseResult.fields,
+                thumb_url: parseResult.thumbUrl,
+                mrkdwn_in: ['text', 'fields'],
+                footer: 'Standuply',
+                footer_icon: 'https://app.standuply.com/img/16.png',
+                ts: Math.round(Date.now() / 1000)
+            };
+
+            myCache.set("producthunt", result);
+            res.json(result);
+        } else {
+            responseWithError('Bad status code received - ' + resultJSON.statusCode, res);
+        }
+
+    });
 
 };
