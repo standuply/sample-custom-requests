@@ -1,5 +1,4 @@
-const NodeCache = require("node-cache");
-const myCache = new NodeCache({stdTTL: 100, checkperiod: 120});
+const myCache = require('../util/my.node.cache');
 
 const requestPromise = require('request-promise');
 

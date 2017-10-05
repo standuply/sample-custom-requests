@@ -1,8 +1,6 @@
-const NodeCache = require("node-cache");
-const myCache = new NodeCache({stdTTL: 100, checkperiod: 120});
+const myCache = require('../util/my.node.cache');
 
 const productHuntAPI = require('producthunt');
-const productHuntConfig = require('../config/producthunt.config');
 
 // Stub for error response
 const errorMessage = require('../response-stubs/error');
@@ -36,7 +34,11 @@ module.exports = (req, res, next) => {
     let value = myCache.get("producthunt");
     if (value === undefined) {
 
-        const productHunt = new productHuntAPI(productHuntConfig);
+        const productHunt = new productHuntAPI({
+            client_id: process.env.PRODUCTHUNT_CLIENT_ID,
+            client_secret: process.env.PRODUCTHUNT_CLIENT_SECRET,
+            grant_type: 'client_credentials'
+        });
 
         productHunt.posts.index({}, (error, postsResult) => {
             if (error) {

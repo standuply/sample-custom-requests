@@ -1,5 +1,4 @@
-const NodeCache = require("node-cache");
-const myCache = new NodeCache({stdTTL: 100, checkperiod: 120});
+const myCache = require('../util/my.node.cache');
 
 // Require with the public beta key
 const giphy = require('giphy-api')();
