@@ -21,10 +21,14 @@
   "author": "standuply",
   "license": "ISC",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.2",
     "debug": "~2.2.0",
+    "dotenv": "^4.0.0",
+    "giphy-api": "^1.2.7",
+    "node-cache": "^4.1.1",
     "node-emoji": "^1.8.1",
+    "node-hn-api": "^1.0.4",
     "optimist": "^0.6.1",
+    "producthunt": "^0.3.0",
     "request": "^2.74.0",
     "request-promise": "^4.1.1",
     "restify": "^5.2.0"
