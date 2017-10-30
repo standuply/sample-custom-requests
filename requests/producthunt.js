@@ -31,7 +31,7 @@ let responseWithError = function (error, res) {
 
 // This function gets last posts from producthunt.com and generates Slack attachment
 module.exports = (req, res, next) => {
-    let value = myCache.get("producthunt");
+    let value = myCache.get('producthunt');
     if (value !== undefined) {
         res.json(value);
         return;
@@ -70,7 +70,7 @@ module.exports = (req, res, next) => {
                 ts: Math.round(Date.now() / 1000)
             };
 
-            myCache.set("producthunt", result);
+            myCache.set('producthunt', result);
             res.json(result);
         } else {
             responseWithError('Bad status code received - ' + resultJSON.statusCode, res);

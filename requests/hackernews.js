@@ -26,7 +26,7 @@ const parseStories = (stories) => {
 
 // This function gets 5 top stories from news.ycombinator.com and generates Slack attachment object
 module.exports = (req, res, next) => {
-    let value = myCache.get("hackernews");
+    let value = myCache.get('hackernews');
     if (value !== undefined) {
         res.json(value);
         return;
@@ -51,7 +51,7 @@ module.exports = (req, res, next) => {
             ts: Math.round(Date.now() / 1000)
         };
 
-        myCache.set("hackernews", result);
+        myCache.set('hackernews', result);
         res.json(result);
     })
         .catch(error => {

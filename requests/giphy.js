@@ -24,7 +24,7 @@ const processGiphy = (data) => {
 
 // This function gets 10 trending images from giphy.com
 module.exports = (req, res, next) => {
-    let value = myCache.get("giphy");
+    let value = myCache.get('giphy');
     if (value !== undefined) {
         res.json(value);
         return;
@@ -51,7 +51,7 @@ module.exports = (req, res, next) => {
                 ts: Math.round(Date.now() / 1000)
             };
 
-            myCache.set("giphy", result);
+            myCache.set('giphy', result);
             res.json(result);
         })
         .catch(error => {
