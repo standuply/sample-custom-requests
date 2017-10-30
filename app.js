@@ -6,7 +6,8 @@ const server = restify.createServer();
 const producthuntRequest = require('./requests/producthunt');
 const hackernewsRequest = require('./requests/hackernews');
 const giphyRequest = require('./requests/giphy');
-const redditRequest = require('./requests/reddit');
+const redditImageRequest = require('./requests/reddit-image');
+const redditPostsRequest = require('./requests/reddit-posts');
 
 
 module.exports =  (options) => {
@@ -16,8 +17,11 @@ module.exports =  (options) => {
 
     server.get('/giphy', giphyRequest);
 
-    server.get('/reddit', redditRequest);
-    server.get('/reddit/:subreddit', redditRequest);
+    server.get('/reddit-image', redditImageRequest);
+    server.get('/reddit-image/:subreddit', redditImageRequest);
+
+    server.get('/reddit-posts', redditPostsRequest);
+    server.get('/reddit-posts/:subreddit', redditPostsRequest);
 
     server.listen(options.port, options.host, () => {
         console.log('%s listening at %s', server.name, server.url);

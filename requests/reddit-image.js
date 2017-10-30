@@ -67,8 +67,10 @@ const parseReddit = (data) => {
 // This function gets json result from reddit
 module.exports = (req, res, next) => {
     let subreddit = req.params.subreddit ? req.params.subreddit : 'aww';
+    if (subreddit === 'subreddit_name')
+        subreddit = 'aww';
 
-    let value = myCache.get("reddit-" + subreddit);
+    let value = myCache.get('reddit-image-' + subreddit);
     if (value !== undefined) {
         res.json(value);
         return;
@@ -112,7 +114,7 @@ module.exports = (req, res, next) => {
                 ts: Math.round(Date.now() / 1000)
             };
 
-            myCache.set("reddit-" + subreddit, result);
+            myCache.set('reddit-image-' + subreddit, result);
             res.json(result);
         })
         .catch(error => {
