@@ -31,7 +31,8 @@
     "producthunt": "^0.3.0",
     "request": "^2.74.0",
     "request-promise": "^4.1.1",
-    "restify": "^5.2.0"
+    "restify": "^5.2.0",
+    "rss-url-parser": "^1.0.0"
   },
   "devDependencies": {
     "nodemon": "^1.11.0"

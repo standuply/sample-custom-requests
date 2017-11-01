@@ -2,6 +2,8 @@ const myCache = require('../util/my.node.cache');
 
 const requestPromise = require('request-promise');
 
+const humanReadable = require('../util/human-readable-number');
+
 // Stub for error response
 const errorMessage = require('../response-stubs/error');
 
@@ -19,7 +21,7 @@ const parseRedditPosts = (data) => {
 
             // Prepare fields array according to Slack attachment format
             fields.push({
-                title: post.title + '  :small_red_triangle: ' + post.score,
+                title: post.title + '  :small_red_triangle: ' + humanReadable(post.score),
                 value: `${readString}   :speech_balloon:  <https://www.reddit.com${post.permalink}|${post.num_comments} comments>`,
                 short: false
             });
