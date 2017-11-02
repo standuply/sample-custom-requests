@@ -55,6 +55,8 @@ module.exports = (req, res, next) => {
         simple: false
     };
 
+    const thumbUrl = 'http://icons.iconarchive.com/icons/uiconstock/socialmedia/64/Reddit-icon.png';
+
     requestPromise(request)
         .then(data => {
             const fields = parseRedditPosts(JSON.parse(data));
@@ -71,6 +73,7 @@ module.exports = (req, res, next) => {
                 title_link: uri,
                 fields: fields,
                 mrkdwn_in: ['text', 'fields'],
+                thumb_url: thumbUrl,
                 footer: 'Standuply',
                 footer_icon: 'https://app.standuply.com/img/16.png',
                 ts: Math.round(Date.now() / 1000)
