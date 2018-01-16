@@ -9,8 +9,10 @@ const errorMessage = require('../response-stubs/error');
 
 //This function parses medium's API response
 const processResponse = (rawData) => {
+    const jsonString = rawData
+        .substring(rawData.indexOf('{"references"'), rawData.lastIndexOf('}})') + 2)
+        .replace(/\\x3(c|e)/mgi, substring => `\\${substring}`);
 
-    const jsonString = rawData.substring(rawData.indexOf('{"references"'), rawData.lastIndexOf('}})') + 2);
     const data = JSON.parse(jsonString);
 
     const fields = [];
