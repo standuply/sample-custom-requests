@@ -21,7 +21,6 @@
   "author": "standuply",
   "license": "ISC",
   "dependencies": {
-    "debug": "~2.2.0",
     "dotenv": "^4.0.0",
     "giphy-api": "^1.2.7",
     "node-cache": "^4.1.1",
@@ -35,6 +34,6 @@
     "rss-url-parser": "^1.0.0"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.18.4"
   }
 }
