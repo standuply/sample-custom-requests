@@ -2,32 +2,30 @@ const myCache = require('../util/my.node.cache');
 
 const requestPromise = require('request-promise');
 
-const humanReadable = require('../util/human-readable-number');
-
 // Stub for error response
 const errorMessage = require('../response-stubs/error');
 
 //This function parses medium's API response
 const processResponse = (rawData) => {
     const jsonString = rawData
-        .substring(rawData.indexOf('{"references"'), rawData.lastIndexOf('}})') + 2)
+        .substring(rawData.indexOf('{"popular"'), rawData.lastIndexOf('}}<') + 2)
         .replace(/\\x3(c|e)/mgi, substring => `\\${substring}`);
 
     const data = JSON.parse(jsonString);
 
     const fields = [];
 
-    for (let prop in data.references.Post) {
-        if (data.references.Post.hasOwnProperty(prop)) {
-            const post = data.references.Post[prop];
-
-            const user = data.references.User[post.creatorId].username;
-            // Prepare fields array according to Slack attachment format
-            fields.push({
-                title: post.title + '  :small_red_triangle: ' + humanReadable(post.virtuals.totalClapCount) + '        :speech_balloon: ' + post.virtuals.responsesCreatedCount,
-                value: `<https://medium.com/@${user}/${post.uniqueSlug}|Read>`,
-                short: false
-            });
+    for (let prop in data) {
+        if (data.hasOwnProperty(prop)) {
+            if (prop.startsWith('Post:')) {
+                const post = data[prop];
+                // Prepare fields array according to Slack attachment format
+                fields.push({
+                    title: post.title,
+                    value: `<https://medium.com/p/${post.id}|Read>`,
+                    short: false
+                });
+            }
         }
         if (fields.length >= 5) {
             break;
@@ -45,7 +43,7 @@ module.exports = (req, res, next) => {
         return;
     }
 
-    let uri = 'https://medium.com/browse/top';
+    let uri = 'https://medium.com/topic/popular';
 
     const request = {
         method: 'GET',
