@@ -8,7 +8,7 @@ const errorMessage = require('../response-stubs/error');
 //This function parses medium's API response
 const processResponse = (rawData) => {
     const jsonString = rawData
-        .substring(rawData.indexOf('{"popular"'), rawData.lastIndexOf('}}<') + 2)
+        .substring(rawData.indexOf('{', rawData.indexOf('__APOLLO_STATE__')), rawData.lastIndexOf('}}<') + 2)
         .replace(/\\x3(c|e)/mgi, substring => `\\${substring}`);
 
     const data = JSON.parse(jsonString);
