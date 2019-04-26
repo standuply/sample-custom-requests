@@ -1,13 +1,16 @@
 const myCache = require('../util/my.node.cache');
 
-// Require with the public beta key
-const giphy = require('giphy-api')();
+// Require with your api key or the public beta key by default
+const giphy = require('giphy-api')(process.env.GIPHY_API_KEY || '');
 
 // Stub for error response
 const errorMessage = require('../response-stubs/error');
 
 // This function processes giphy.com JSON response
 const processGiphy = (data) => {
+    if (!data.data || !data.data.length) {
+        throw 'GIPHY API error has occurred';
+    }
     let gifURL;
     const num = Math.floor(Math.random() * data.data.length);
 
