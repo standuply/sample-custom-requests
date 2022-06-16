@@ -44,7 +44,7 @@ module.exports = (req, res, next) => {
             const result = {
                 fallback: 'Giphy daily digest.',
                 color: '#36a64f',
-                pretext: 'A trending gif',
+                pretext: 'A trending gif!',
                 title: 'Giphy',
                 title_link: 'https://giphy.com/',
                 image_url: parseResult.image,
