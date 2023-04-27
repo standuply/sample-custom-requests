@@ -22,19 +22,21 @@ const getUrlFromArray = (resolutions, width) => {
 
 // This function parses reddit's JSON
 const parseReddit = (data) => {
-
     if (data.kind === 'Listing' &&
         data.data.children.length > 0) {
 
         let count = 10;
+
         while (count > 0) {
             count--;
+
             const num = Math.floor(Math.random() * data.data.children.length);
             const post = data.data.children[num].data;
 
             // ignore video posts
             if (post && post.preview && post.preview.images && post.preview.images.length > 0) {
                 const images = post.preview.images;
+
                 let url = post.url;
 
                 // try to find a small gif or still image
@@ -42,12 +44,16 @@ const parseReddit = (data) => {
                     images[0].variants.gif.resolutions.length > 0) {
 
                     let smallUrl = getUrlFromArray(images[0].variants.gif.resolutions, 150);
-                    if (smallUrl !== null)
+
+                    if (smallUrl !== null) {
                         url = smallUrl;
+                    }
                 } else {
                     let smallUrl = getUrlFromArray(images[0].resolutions, 300);
-                    if (smallUrl !== null)
+
+                    if (smallUrl !== null) {
                         url = smallUrl;
+                    }
                 }
 
                 return {
@@ -67,10 +73,12 @@ const parseReddit = (data) => {
 // This function gets json result from reddit
 module.exports = (req, res, next) => {
     let subreddit = req.params.subreddit ? req.params.subreddit : 'aww';
+
     if (subreddit === 'subreddit_name')
         subreddit = 'aww';
 
     let value = myCache.get('reddit-image-' + subreddit);
+
     if (value !== undefined) {
         res.json(value);
         return;
@@ -88,37 +96,65 @@ module.exports = (req, res, next) => {
     requestPromise(request)
         .then(data => {
             const parseResult = parseReddit(JSON.parse(data));
+
             if (parseResult === null) {
                 throw 'parsing JSON, subreddit - ' + subreddit;
             }
 
-            // Make the Slack attachment - one object
-            const result = {
-                fallback: 'Reddit daily image.',
-                color: '#36a64f',
-                pretext: 'A Reddit image',
-                title: subreddit + ' - Reddit',
-                title_link: uri,
-                fields: [
+            let blocks = [];
+
+            if (req.url.includes('messengerType=slack')) {
+                blocks = [
                     {
-                        title: parseResult.title,
-                        value: `<https://www.reddit.com${parseResult.permalink}|  :speech_balloon:    ${parseResult.comments} comments>`,
-                        short: false
+                        type: 'text',
+                        text: `Top image from Reddit / ${subreddit}`,
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: parseResult.title + '\n' + `[💬    ${parseResult.comments} comments](https://www.reddit.com${parseResult.permalink})`,
+                        markdown: true,
+                        color: 'green',
+                    },
+                    {
+                        type: 'image',
+                        url: parseResult.image,
+                        title: '',
+                        altText: 'A Reddit image',
+                        color: 'green',
                     }
-                ],
-                mrkdwn_in: ['text', 'fields'],
-                image_url: parseResult.image,
-                thumb_url: parseResult.thumbnail,
-                footer: 'Standuply',
-                footer_icon: 'https://app.standuply.com/img/16.png',
-                ts: Math.round(Date.now() / 1000)
-            };
+                ];
+            }
+
+            if (req.url.includes('messengerType=microsoft-teams')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: `**Top image from Reddit / ${subreddit}**`,
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: parseResult.title + '\n' + `[💬    ${parseResult.comments} comments](https://www.reddit.com${parseResult.permalink})`,
+                        markdown: true,
+                    },
+                    {
+                        type: 'image',
+                        url: parseResult.image,
+                        title: '',
+                        altText: 'A Reddit image',
+                    }
+                ];
+            }
+
+            const result = { blocks };
 
             myCache.set('reddit-image-' + subreddit, result);
             res.json(result);
         })
         .catch(error => {
             console.log('Reddit error', error);
+
             res.json(errorMessage(error.toString()));
         });
 
