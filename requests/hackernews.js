@@ -7,56 +7,74 @@ const errorMessage = require('../response-stubs/error');
 
 // This function processes news.ycombinator.com JSON response
 const parseStories = (stories) => {
-    const fields = [];
     const ycURL = 'https://news.ycombinator.com/item?id=';
 
+    let news = '';
+
     for (let story of stories) {
-        let readString = '<' + ( story.url ? story.url : ycURL + story.id ) + '|Read>';
+        let readString = `[Read](${story.url ? story.url : ycURL + story.id})`;
 
-        // Prepare fields array according to Slack attachment format
-        fields.push({
-            title: story.title + '  :small_red_triangle: ' + story.score,
-            value: `${readString}   :speech_balloon:  <https://news.ycombinator.com/item?id=${story.id}|${story.descendants} comments>`,
-            short: false
-        });
-
+        news += story.title + '  🔺 ' + story.score + '\n';
+        news += `${readString}   💬  [${story.descendants} comments](https://news.ycombinator.com/item?id=${story.id})` + '\n\n';
     }
-    return fields;
+
+    return news;
 };
 
 // This function gets 5 top stories from news.ycombinator.com and generates Slack attachment object
 module.exports = (req, res, next) => {
     let value = myCache.get('hackernews');
+
     if (value !== undefined) {
         res.json(value);
         return;
     }
 
-    const thumbUrl = 'http://www.ycombinator.com/images/ycombinator-logo-fb889e2e.png';
-    hn.fetchTopStories(5).then((topStories) => {
-        const fields = parseStories(topStories);
+    hn.fetchTopStories(5)
+        .then((topStories) => {
+            const news = parseStories(topStories);
 
-        // Make the Slack attachment - one object
-        const result = {
-            fallback: 'Hacker News daily digest.',
-            color: '#36a64f',
-            pretext: 'Top stories on Hacker News',
-            title: 'Hacker News',
-            title_link: 'https://news.ycombinator.com/',
-            fields: fields,
-            thumb_url: thumbUrl,
-            mrkdwn_in: ['text', 'fields'],
-            footer: 'Standuply',
-            footer_icon: 'https://app.standuply.com/img/16.png',
-            ts: Math.round(Date.now() / 1000)
-        };
+            let blocks = [];
 
-        myCache.set('hackernews', result);
-        res.json(result);
-    })
+            if (req.url.includes('messengerType=slack')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: 'Top stories on Hacker News',
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: news,
+                        markdown: true,
+                        color: 'green',
+                    }
+                ];
+            }
+
+            if (req.url.includes('messengerType=microsoft-teams')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: '**Top stories on Hacker News**',
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: news,
+                        markdown: true,
+                    }
+                ];
+            }
+
+            // Make the Slack attachment - one object
+            const result = { blocks };
+
+            myCache.set('hackernews', result);
+            res.json(result);
+        })
         .catch(error => {
             console.log('Hacker News error', error);
             res.json(errorMessage(error.toString()));
         });
-
 };
