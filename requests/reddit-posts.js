@@ -9,26 +9,21 @@ const errorMessage = require('../response-stubs/error');
 
 // This function parses reddit's JSON
 const parseRedditPosts = (data) => {
-
-    if (data.kind === 'Listing' &&
-        data.data.children.length > 0) {
-
-        const fields = [];
+    if (
+        data.kind === 'Listing' &&
+        data.data.children.length > 0
+    ) {
+        let news = '';
 
         for (let item of data.data.children) {
             let post = item.data;
-            let readString = '<' + post.url + '|Read>';
+            let readString = `[Read](${post.url})`;
 
-            // Prepare fields array according to Slack attachment format
-            fields.push({
-                title: post.title + '  :small_red_triangle: ' + humanReadable(post.score),
-                value: `${readString}   :speech_balloon:  <https://www.reddit.com${post.permalink}|${post.num_comments} comments>`,
-                short: false
-            });
-
+            news += post.title + '  🔺 ' + humanReadable(post.score) + '\n';
+            news += `${readString}   💬  [${post.num_comments} comments](https://www.reddit.com${post.permalink})` + '\n\n';
         }
-        return fields;
 
+        return news;
     }
 
     return null;
@@ -37,12 +32,16 @@ const parseRedditPosts = (data) => {
 // This function gets json result from reddit
 module.exports = (req, res, next) => {
     let subreddit = req.params.subreddit ? req.params.subreddit : 'technology';
-    if (subreddit === 'subreddit_name')
+
+    if (subreddit === 'subreddit_name') {
         subreddit = 'technology';
+    }
 
     let value = myCache.get('reddit-posts-' + subreddit);
+
     if (value !== undefined) {
         res.json(value);
+
         return;
     }
 
@@ -55,37 +54,55 @@ module.exports = (req, res, next) => {
         simple: false
     };
 
-    const thumbUrl = 'http://icons.iconarchive.com/icons/uiconstock/socialmedia/64/Reddit-icon.png';
-
     requestPromise(request)
         .then(data => {
-            const fields = parseRedditPosts(JSON.parse(data));
-            if (fields === null) {
+            const news = parseRedditPosts(JSON.parse(data));
+
+            if (news === null) {
                 throw 'parsing posts JSON, subreddit - ' + subreddit;
             }
 
-            // Make the Slack attachment - one object
-            const result = {
-                fallback: 'Reddit top posts.',
-                color: '#36a64f',
-                pretext: 'Top posts from Reddit / ' + subreddit,
-                title: subreddit + ' - Reddit',
-                title_link: uri,
-                fields: fields,
-                mrkdwn_in: ['text', 'fields'],
-                thumb_url: thumbUrl,
-                footer: 'Standuply',
-                footer_icon: 'https://app.standuply.com/img/16.png',
-                ts: Math.round(Date.now() / 1000)
-            };
+            let blocks = [];
 
+            if (req.url.includes('messengerType=slack')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: 'Top posts from Reddit / ' + subreddit,
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: news,
+                        markdown: true,
+                        color: 'green',
+                    }
+                ];
+            }
+
+            if (req.url.includes('messengerType=microsoft-teams')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: '**Top posts from Reddit / ' + subreddit + '**',
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: news,
+                        markdown: true,
+                    }
+                ];
+            }
+
+            const result = { blocks };
 
             myCache.set('reddit-posts-' + subreddit, result);
             res.json(result);
         })
         .catch(error => {
             console.log('Reddit error', error);
+
             res.json(errorMessage(error.toString()));
         });
-
 };
