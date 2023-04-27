@@ -7,64 +7,80 @@ const errorMessage = require('../response-stubs/error');
 
 // This function parses techcrunch's JSON
 const parseTechcrunchPosts = (data) => {
+    let news = '';
 
-        const fields = [];
+    for (let i = 0; i < data.length; i++) {
+        const post = data[i];
 
-        for (let post of data) {
-            // Prepare fields array according to Slack attachment format
-            fields.push({
-                title: post.title,
-                value: `<${post.origlink}|Read>`, // `${readString}   :speech_balloon:  <${post.comments}| Comments>`,
-                short: false
-            });
+        news += post.title + '\n';
+        news += `[Read](${post.link})` + '\n\n';
 
-            if (fields.length >= 5) {
-                break;
-            }
+        if (i >= 5) {
+            break;
         }
-        return fields;
+    }
 
-
+    return news;
 };
 
 // This function gets json result from techcrunch
 module.exports = (req, res, next) => {
-
     let value = myCache.get('techcrunch');
+
     if (value !== undefined) {
         res.json(value);
         return;
     }
 
-    const thumbUrl = 'https://tctechcrunch2011.files.wordpress.com/2014/04/tc-logo.jpg';
-
-    parser('http://feeds.feedburner.com/TechCrunch/')
+    parser('https://techcrunch.com/category/startups/feed/')
         .then((data) => {
-            const fields = parseTechcrunchPosts(data);
-            if (fields === null) {
+            const news = parseTechcrunchPosts(data);
+
+            if (news === '') {
                 throw 'parsing RSS JSON';
             }
 
-            // Make the Slack attachment - one object
-            const result = {
-                fallback: 'Techcrunch latest posts.',
-                color: '#36a64f',
-                pretext: 'Latest posts from Techcrunch',
-                fields: fields,
-                mrkdwn_in: ['text', 'fields'],
-                thumb_url: thumbUrl,
-                footer: 'Standuply',
-                footer_icon: 'https://app.standuply.com/img/16.png',
-                ts: Math.round(Date.now() / 1000)
-            };
+            let blocks = [];
 
+            if (req.url.includes('messengerType=slack')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: 'Latest posts from Techcrunch',
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: news,
+                        markdown: true,
+                        color: 'green',
+                    }
+                ];
+            }
+
+            if (req.url.includes('messengerType=microsoft-teams')) {
+                blocks = [
+                    {
+                        type: 'text',
+                        text: '**Latest posts from Techcrunch**',
+                        markdown: false,
+                    },
+                    {
+                        type: 'text',
+                        text: news,
+                        markdown: true,
+                    }
+                ];
+            }
+
+            const result = { blocks };
 
             myCache.set('techcrunch', result);
             res.json(result);
         })
         .catch(error => {
             console.log('Techcrunch error', error);
+
             res.json(errorMessage(error.toString()));
         });
-
 };
