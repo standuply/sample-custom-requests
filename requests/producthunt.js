@@ -7,33 +7,31 @@ const errorMessage = require('../response-stubs/error');
 
 //This function parses producthunt's API response
 const processResponse = (data) => {
-    const fields = [];
-    let thumbUrl = 'https://s3.producthunt.com/static/ph-logo-2.png';
+    let news = '';
 
     for (let i = 0; i < 5; i++) {
         const post = data.posts[i];
 
-        // Prepare fields array according to Slack attachment format
-        fields.push({
-            title: post.name + '  :small_red_triangle: ' + post.votes_count + '  :speech_balloon: ' + post.comments_count,
-            value: `<${post.discussion_url}|${post.tagline}>`,
-            short: false
-        });
+        news += post.name + '  🔺 ' + post.votes_count + '  💬 ' + post.comments_count + '\n';
+        news += `[${post.tagline}](${post.discussion_url})` + '\n\n';
     }
 
-    return {fields, thumbUrl};
+    return news;
 };
 
 let responseWithError = function (error, res) {
-    console.log('Product Hunt error', error);
+    console.error('Product Hunt error' + JSON.parse(JSON.stringify(error)));
+
     res.json(errorMessage(error));
 };
 
 // This function gets last posts from producthunt.com and generates Slack attachment
 module.exports = (req, res, next) => {
     let value = myCache.get('producthunt');
+
     if (value !== undefined) {
         res.json(value);
+
         return;
     }
 
@@ -46,36 +44,37 @@ module.exports = (req, res, next) => {
     productHunt.posts.index({}, (error, postsResult) => {
         if (error) {
             responseWithError(error.toString(), res);
+
             return;
         }
 
         const resultJSON = postsResult.toJSON();
+
         if (resultJSON.statusCode < 300) {
             const bodyJSON = JSON.parse(resultJSON.body);
 
-            const parseResult = processResponse(bodyJSON);
+            const news = processResponse(bodyJSON);
 
-            // Make the Slack attachment - one object
-            const result = {
-                fallback: 'Product Hunt daily digest.',
-                color: '#36a64f',
-                pretext: 'Top products on Product Hunt',
-                title: 'Product Hunt popular',
-                title_link: 'https://www.producthunt.com/',
-                fields: parseResult.fields,
-                thumb_url: parseResult.thumbUrl,
-                mrkdwn_in: ['text', 'fields'],
-                footer: 'Standuply',
-                footer_icon: 'https://app.standuply.com/img/16.png',
-                ts: Math.round(Date.now() / 1000)
-            };
+            const blocks = [
+                {
+                    type: 'text',
+                    text: 'Top products on Product Hunt',
+                    markdown: false,
+                },
+                {
+                    type: 'text',
+                    text: news,
+                    markdown: true,
+                    color: 'green',
+                }
+            ];
+
+            const result = { blocks };
 
             myCache.set('producthunt', result);
             res.json(result);
         } else {
             responseWithError('Bad status code received - ' + resultJSON.statusCode, res);
         }
-
     });
-
 };
